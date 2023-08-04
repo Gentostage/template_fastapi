@@ -1,23 +1,23 @@
 """Конфигурация для тестирования."""
 import uuid
-from fastapi.testclient import TestClient
-from httpx import AsyncClient
-
 
 import pytest
-from sqlalchemy import text, make_url
+from fastapi.testclient import TestClient
+from httpx import AsyncClient
+from sqlalchemy import make_url, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app.settings import settings
 from app.database import get_async_session
-from app.models.base import Base
 from app.main import app
+from app.models.base import Base
+from app.settings import settings
+
 
 @pytest.fixture
 def test_db_name():
-    test_db_name = f'{uuid.uuid4().hex}_pytest'
+    test_db_name = f"{uuid.uuid4().hex}_pytest"
     return test_db_name
 
 
@@ -28,10 +28,11 @@ async def create_database(test_db_name):
 
     async with template_engine.begin() as conn:
         await conn.execute(text("ROLLBACK"))
-        await conn.execute(text(f"CREATE DATABASE \"{test_db_name}\";"))
+        await conn.execute(text(f'CREATE DATABASE "{test_db_name}";'))
         await conn.commit()
         await conn.close()
         await template_engine.dispose()
+
 
 @pytest.fixture
 async def sa_engine_db_async(test_db_name):
@@ -39,8 +40,10 @@ async def sa_engine_db_async(test_db_name):
 
     url = make_url(settings.DATABASE_URL)
     url = url.set(database=test_db_name)
-    a_engine = create_async_engine(url, poolclass=NullPool, connect_args={'server_settings': {'jit': 'off'}})
-    
+    a_engine = create_async_engine(
+        url, poolclass=NullPool, connect_args={"server_settings": {"jit": "off"}}
+    )
+
     async with a_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     try:
@@ -50,6 +53,7 @@ async def sa_engine_db_async(test_db_name):
             await conn.run_sync(Base.metadata.drop_all)
 
         await a_engine.dispose()
+
 
 @pytest.fixture
 async def db(sa_engine_db_async):
@@ -62,6 +66,7 @@ async def db(sa_engine_db_async):
     async with async_session() as session:
         yield session
 
+
 @pytest.fixture
 async def patch_sessionmaker(db, monkeypatch) -> None:
     def call(*args, **kwargs) -> AsyncSession:
@@ -70,10 +75,8 @@ async def patch_sessionmaker(db, monkeypatch) -> None:
 
     monkeypatch.setattr(sessionmaker, "__call__", call)
 
+
 @pytest.fixture
 async def api_client(patch_sessionmaker) -> AsyncClient:
-    async with AsyncClient(
-        app=app, base_url=f"https://test"
-    ) as async_client:
+    async with AsyncClient(app=app, base_url=f"https://test") as async_client:
         yield async_client
-

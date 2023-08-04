@@ -1,6 +1,7 @@
 from sqlalchemy import Integer, String
-from app.models.base import Base
 from sqlalchemy.orm import mapped_column
+
+from app.models.base import Base
 
 
 class Metric(Base):
