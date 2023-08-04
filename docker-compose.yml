@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  # Сервис базы данных PostgreSQL
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: metrics_db
+    ports:
+      - "5432:5432"
+    networks:
+      - metrics
+
+  # Сервис вашего приложения
+  app:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    networks:
+      - metrics
+
+networks:
+  metrics:
+    driver: bridge
+
