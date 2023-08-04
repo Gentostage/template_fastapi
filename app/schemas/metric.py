@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import UUID4, BaseModel
 from pydantic_settings import SettingsConfigDict
 
 
@@ -13,7 +13,7 @@ class MetricCreate(MetricBase):
 
 
 class MetricResponse(MetricBase):
-    id: int
+    id: UUID4
 
     model_config = SettingsConfigDict(from_attributes=True)
 

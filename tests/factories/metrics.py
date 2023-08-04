@@ -12,6 +12,6 @@ class MetricFactory(ModelFactory[MetricBase]):
 
     @classmethod
     async def build_and_save(cls, session: AsyncSession, **kwargs) -> MetricBase:
-        payload = cls.build(**kwargs).dict()
+        payload = cls.build(**kwargs).model_dump()
         crud = MetricCRUD(session)
         return await crud.create(**payload)
