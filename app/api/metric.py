@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_async_session
@@ -8,7 +8,7 @@ from app.schemas.metric import MetricCreate, MetricResponse, MetricServiceRespon
 router = APIRouter()
 
 
-@router.post("/metrics", response_model=MetricResponse)
+@router.post("/metrics", response_model=MetricResponse, status_code=status.HTTP_201_CREATED)
 async def add_metric(metric_data: MetricCreate, session: AsyncSession = Depends(get_async_session)):
     return await create_metric(
         session,
@@ -18,6 +18,6 @@ async def add_metric(metric_data: MetricCreate, session: AsyncSession = Depends(
     )
 
 
-@router.get("/metrics/{service_name}", response_model=list[MetricServiceResponse])
+@router.get("/metrics/{service_name}", response_model=list[MetricServiceResponse], status_code=status.HTTP_200_OK)
 async def get_metrics(service_name: str, session: AsyncSession = Depends(get_async_session)):
     return await get_metrics_by_service(session, service_name)

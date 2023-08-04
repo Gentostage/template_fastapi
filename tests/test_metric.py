@@ -1,7 +1,4 @@
-import pytest
-
-import app.main as main
-from app.crud.metric import create_metric
+from tests.factories.metrics import MetricFactory
 
 
 async def test_create_metric(api_client):
@@ -11,7 +8,7 @@ async def test_create_metric(api_client):
         "response_time_ms": 100,
     }
     response = await api_client.post("/metrics", json=metric_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {
         "id": 1,
         "service_name": "TestService",
@@ -21,19 +18,11 @@ async def test_create_metric(api_client):
 
 
 async def test_get_metrics(api_client, db):
-    await create_metric(
-        db, service_name="ServiceA", path="/path1", response_time_ms=100
-    )
-    await create_metric(
-        db, service_name="ServiceA", path="/path1", response_time_ms=250
-    )
-    await create_metric(
-        db, service_name="ServiceA", path="/path1", response_time_ms=250
-    )
+    await MetricFactory.build_and_save(session=db, service_name="ServiceA", path="/path1", response_time_ms=100)
+    await MetricFactory.build_and_save(session=db, service_name="ServiceA", path="/path1", response_time_ms=250)
+    await MetricFactory.build_and_save(session=db, service_name="ServiceA", path="/path1", response_time_ms=250)
 
-    await create_metric(
-        db, service_name="ServiceB", path="/path3", response_time_ms=150
-    )
+    await MetricFactory.build_and_save(session=db, service_name="ServiceB", path="/path3", response_time_ms=250)
 
     response = await api_client.get("/metrics/ServiceA")
     assert response.status_code == 200
